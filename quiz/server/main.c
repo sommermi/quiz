@@ -8,6 +8,7 @@
  */
 
 #include "common/util.h"
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
@@ -15,6 +16,7 @@ int main(int argc, char **argv)
 	/* debugEnable() */
 
 	infoPrint("Server Gruppe xy");
+	printf("\nDas ist ein Test");		//Test commit
 
 	return 0;
 }
