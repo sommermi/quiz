@@ -1,0 +1,10 @@
+*.o
+*.dep
+*.a
+*.swp
+*.bak
+*~
+.cproject
+.project
+Debug/
+Release/
