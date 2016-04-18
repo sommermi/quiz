@@ -9,10 +9,14 @@
 #define SERVER_MAIN_H_
 
 
-static char lockFilePath[] = "/tmp/programRunning";	//Test
+static char lockFilePath[] = "/tmp/programRunning";
+static struct sigaction action;
 
 int mainCreateLockfile(void);
-int mainDeleteLockfile(void);
+void mainDeleteLockfile(void);
+int mainInitSighandler(void);
+void mainSignalHandler(int sig);
+void mainCleanup(void);
 
 
 #endif /* SERVER_MAIN_H_ */

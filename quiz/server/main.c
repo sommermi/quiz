@@ -13,25 +13,35 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 #include "main.h"
+
+#include <stdio.h>
+
 
 int main(int argc, char **argv)
 {
+
+	if(mainInitSighandler() < 0)
+	{
+		perror("Error: Unable to regsiter custom sigHandler");
+		return -1;
+	}
+
 	switch(mainCreateLockfile())
 	{
 		case 0:	 perror("Error: Another instance of the server is already running!");
 				 return -1;
-		case 1:  printf("\nStarting server...");
+		case 1:  printf("Starting server...\n");
 				 break;
 		case -1: perror("Error: Problems while creating lock file");
 				 return -1;
 	}
 
+	sleep(15);
 
-	if(mainDeleteLockfile() != 0)
-	{
-		perror("Error: Deleting lockfile failed!");
-	}
+	mainCleanup();
+
 
 	return 0;
 }
@@ -73,15 +83,77 @@ int mainCreateLockfile(void)
 /**
  * int mainDeleteLockfie(void)
  *
- * This function deletes the crated lock file that ensures that only one instance
+ * This function deletes the created lock file that ensures that only one instance
  * of the server is running.
  * The function is called at the end of a game as part of the cleanup routine to
  * free all resources that were occupied by the server process.
  *
  * Return values:
- * !=0 indicates that there an error has occured while deleting the lock file
+ * != 0 indicates that there an error has occured while deleting the lock file
  */
-int mainDeleteLockfile(void)
+void mainDeleteLockfile(void)
 {
-	return unlink(lockFilePath);
+	if(unlink(lockFilePath) != 0)
+	{
+		perror("Error: Deleting lockfile");
+	}
+
+}
+
+/*
+ * void mainSignalHandler(int sig)
+ *
+ * This function implements the custom signal handler for the server process. In case
+ * a SIGTERM or SIGINT signal is received this function will call the mainCleanup
+ * function which will release all the resources.
+ *
+ * Parameters:
+ * int sig = signal number (specified in signal.h)
+ */
+void mainSignalHandler(int sig)
+{
+	switch(sig)
+	{
+		case SIGINT  : printf("Received SIGINT starting cleanup\n");
+					   mainCleanup();
+					   break;
+		case SIGTERM : printf("Recieved SIGTERM starting cleanup\n");
+					   mainCleanup();
+					   break;
+	}
+}
+
+/*
+ * int mainInitSignalhandler(void)
+ *
+ * This function redirects the needed signals to the custom signal handler routine
+ * mainSignalHandler().
+ *
+ * Return values:
+ * -1 indicates an error has occured => terminate process
+ * 0 indicates no error
+ */
+int mainInitSighandler(void)
+{
+	action.sa_handler = mainSignalHandler;		//register custom sigHandler function
+	sigemptyset(&action.sa_mask);				//don't block other signals while sigHandler runs
+	action.sa_flags = 0;						//no special behavior required
+
+	//redirect the required signals to custom sigHandler
+	if( (sigaction(SIGINT, &action, NULL) || sigaction(SIGTERM,&action,NULL) ) < 0)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * void mainCleanup(void)
+ *
+ * This function releases all the acquired resources before the termination of the process.
+ */
+void mainCleanup(void)
+{
+	mainDeleteLockfile();
 }
