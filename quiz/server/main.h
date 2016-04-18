@@ -9,7 +9,7 @@
 #define SERVER_MAIN_H_
 
 
-static char lockFilePath[] = "/tmp/programRunning";
+static char lockFilePath[] = "/tmp/programRunning";	//Test
 
 int mainCreateLockfile(void);
 int mainDeleteLockfile(void);
