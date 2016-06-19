@@ -20,12 +20,15 @@
 #include <string.h>
 #include <getopt.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 
 #include "login.h"
 #include "main.h"
 #include "user.h"
 #include "score.h"
+#include "catalog.h"
 
 
 
@@ -69,6 +72,11 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	if( (mainCreateLoginSocket(port) < 0) )
+	{
+		return -1;
+	}
+
 	switch(mainCreateLockfile())
 	{
 		case 0:	 perror("Error: Another instance of the server is already running!");
@@ -77,12 +85,6 @@ int main(int argc, char **argv)
 				 break;
 		case -1: perror("Error: Problems while creating lock file");
 				 return -1;
-	}
-
-	if( (mainCreateLoginSocket(port) < 0) )
-	{
-		mainCleanup();
-		return -1;
 	}
 
 	if( (mainCreateSemaphor()) < 0)
@@ -114,8 +116,6 @@ int main(int argc, char **argv)
 	}
 
 	pthread_join(loginThread,NULL);
-	pthread_exit(&scoreAgentThread);
-	mainCleanup();
 	return 0;
 }
 
@@ -346,12 +346,29 @@ int mainInitSighandler(struct sigaction action)
 void mainCleanup(void)
 {
 	printf("\nCleanup\n");
+	catalogParameters param = catalogGetParameters();
 	mainDeleteLockfile();
-	close(loginSocket);
 	sem_destroy(&sem);
+	pthread_mutex_destroy(&mutex);
+	close(loginSocket);
 	pthread_cancel(loginThread);
 	pthread_cancel(scoreAgentThread);
 	pthread_mutex_destroy(&mutex);
+	kill(param.pid, SIGTERM);
+
+	for (int i = 0; i<4; i++)
+	{
+		player playerData = userGetPlayer(i);
+		if(playerData.playerInUse == 1)
+		{
+			close(playerData.playerSocket);
+		}
+	}
+	if(param.initialised == 1)
+	{
+		catalogUnlinkSharedMemory();
+	}
+
 }
 
 /*

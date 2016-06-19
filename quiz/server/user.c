@@ -16,7 +16,7 @@
 
 
 static player playerData[4];
-static int gameState = 0;		//1 indicates game started => refuse further login requests etc.
+static int gameState = 0;		//1 indicates game started => refuse further login requests etc. 2 indicates game finished
 static pthread_mutex_t mutex;
 
 void userSetUserFinished(int userId)
@@ -115,7 +115,6 @@ void userSetGameState(int state)
  */
 int userGetGameState(void)
 {
-
 	return gameState;
 }
 
@@ -256,6 +255,17 @@ void userInit(void)
 	mutex =  mainGetMutex();
 }
 
+/*
+ * void userSetRankById(int userId, uint8_t rank)
+ *
+ * This function sets the players rank during the game. The user
+ * gets identified by its id.
+ *
+ * Parameters:
+ * int userId = the user id where we want to set the rank
+ * uint8_t = the current rank of the user in the game
+ *
+ */
 void userSetRankById(int userId, uint8_t rank)
 {
 	for(int i= 0; i<4; i++)

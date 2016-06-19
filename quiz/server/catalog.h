@@ -30,5 +30,5 @@ int catalogLoad(char filename[]);
 int catalogBindSharedMemory(void);
 void catalogUnlinkSharedMemory(void);
 Question catalogReadQuestion(int questionNumber);
-catalogParameters catalogGetParamesters(void);
+catalogParameters catalogGetParameters(void);
 #endif

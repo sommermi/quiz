@@ -53,11 +53,12 @@ void *scoreAgent(void *arg)
 		rfcSendListMessage(activeSockets,listElements,numberOfPlayers);
 
 		userLockData();
-		for(int i=0; i < numberOfPlayers; i++)
+		for(int i=0; i < numberOfPlayers; i++)		// set the rank of the player (easy to be done here because they are already sorted)
 		{
 			userSetRankById(listElements[i].id, i + 1);
 		}
 		userUnlockData();
+
 		numberOfPlayers = 0;
 
 	}

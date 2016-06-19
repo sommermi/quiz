@@ -134,6 +134,6 @@ int main(int argc,	/**< Länge der Kommandozeile */
 
 	debugPrint("Loader gestartet, bereit für Kommandos.");
 	processCommands();
-
+	debugPrint("Loader Ende");
 	return 0;
 }

@@ -192,7 +192,6 @@ void rfcSendErrorBroadcast(char message[])
 	}
 	userUnlockData();
 	free(msg);
-	mainCleanup();
 }
 /*
  * catalogChange *rfcReadCatalaogChange(int socket, header head)
@@ -248,7 +247,7 @@ startGame *rfcReadStartGame(int socket, header head)
 	char *name;
 
 	stg = malloc(sizeof(startGame) + length);
-	name = malloc(sizeof(char) * length);
+	name = malloc(sizeof(char) * length );
 
 	read(socket,name,length);			//read the remaining part from socket
 	stg->type = StartGame;
@@ -406,6 +405,17 @@ void rfcSendQuestionResult(int socket, uint8_t correct, int timeout)
 	write(socket, &msg, sizeof(questionResult));
 }
 
+/*
+ * void rfcSendGameOverMessage(int socket, int userId)
+ *
+ * This function sends the game over message to the
+ * clients as soon as the game has finished.
+ *
+ *Parameter:
+ *int socket = socket descriptor of client
+ *int userId = id of the user
+ *
+ */
 void rfcSendGameOverMessage(int socket, int userId)
 {
 	gameOver msg;
@@ -414,7 +424,7 @@ void rfcSendGameOverMessage(int socket, int userId)
 	msg.length = htons(5);
 
 	userLockData();
-	msg.rank = userGetPlayer(userId).rank;
+	msg.rank = userGetPlayer(userId).rank;	//get the rank of the player
 	msg.score = htonl(userGetPlayer(userId).playerScore);
 	userUnlockData();
 
